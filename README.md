@@ -50,8 +50,8 @@ python examples/ingest.py --name nice Guidelines/*.pdf
 # 3. ask
 python examples/ask.py "How often should adults at high risk of pressure ulcers be repositioned?"
 
-# 4. evaluate: predictions now; with a gold file, τ is tuned on dev and scored on val
-python examples/evaluate_systems.py --store nice --questions data/nice/questions.json [--gold data/nice/gold.json]
+# 4. evaluate against the gold set: tune τ on train, report train / val / test
+python examples/evaluate_systems.py --gold Test+answer/questions_nurse40.json
 ```
 
 Jev systems need `TYPESAFE_API_KEY` (read from `~/.config/capstone-rag/typesafe.env`, never stored in the repo) and the `--allow-external` flag.
@@ -61,6 +61,26 @@ Jev systems need `TYPESAFE_API_KEY` (read from `~/.config/capstone-rag/typesafe.
 - **Course score:** 0.5 × Recall@3 + 0.5 × abstention accuracy.
 - **Unsafe-answer rate:** the share of out-of-scope questions that were answered.
 - **Verified-claim rate:** the share of LLM claims that passed verification.
+
+## Results (NICE, 40 gold questions: 24 train / 8 val / 8 test; 20 answerable, 20 near-miss not documented)
+
+τ is tuned on train only. Below are all 40 questions (train is optimistic) and the sealed test split:
+
+| System | Recall@3 | Guideline@1 | Abstention acc. | Course score (all 40) | Course score (test) | Unsafe answers |
+|---|---|---|---|---|---|---|
+| bm25 | 0.53 | 0.75 | 0.75 | 0.64 | 0.50 | 20% |
+| vector (MiniLM, lab09) | 0.68 | 1.00 | 0.75 | 0.71 | 0.50 | 20% |
+| vector_bge | 0.78 | 1.00 | 0.62 | 0.70 | 0.50 | 15% |
+| hybrid | 0.85 | 1.00 | 0.62 | 0.74 | 0.50 | 0% |
+| graph | 0.30 | 0.82 | 0.55 | 0.43 | 0.38 | 10% |
+| hybrid_graph | 0.85 | 1.00 | 0.62 | 0.74 | 0.50 | 0% |
+| **hybrid_graph_llm** | **0.85** | **1.00** | **0.82** | **0.84** | **0.62** | **0%** |
+
+What the results show:
+- **Proposed system:** `hybrid_graph_llm` is correct on 33/40 questions. It answered 13, all correct with a citation, and gave **no unsafe answers**. All 7 errors are over-cautious abstentions: 4 correct drafts rejected by the verifier, and 3 retrieval misses.
+- **Baselines answer what they shouldn't:** BM25 and vector answer 15–20% of the "not documented" questions.
+- **The graph adds nothing measurable** on this corpus. `hybrid` and `hybrid_graph` differ only in third-place retrievals that were blocked anyway.
+- **Caveat:** the splits are small (test n=8). The 95% intervals overlap, so the test difference between `hybrid_graph_llm` and `hybrid` rests on 2 questions.
 
 ## Layout
 

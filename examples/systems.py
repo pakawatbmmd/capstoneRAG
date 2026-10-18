@@ -3,6 +3,7 @@
     name            retrieval                                   rerank            answer      guard -> "Not in the guidelines"
     bm25            BM25                                        -                 extractive  score τ
     vector          all-MiniLM-L6-v2                            -                 extractive  cosine τ
+    vector_bge      BAAI/bge-m3                                 -                 extractive  cosine τ
     hybrid          BM25 + bge-m3 (RRF)                         bge-reranker-v2   extractive  reranker τ
     graph           entity graph + Personalized PageRank        -                 extractive  PPR τ
     hybrid_graph    BM25 + bge-m3 + graph (RRF)                 bge-reranker-v2   extractive  reranker τ
@@ -37,12 +38,12 @@ from guideline_rag.graph import GraphRetriever, LexiconExtractor, load_lexicon
 
 LLM_MODEL = "Qwen/Qwen3-4B-Instruct-2507"
 KEY_FILE = Path.home() / ".config" / "capstone-rag" / "typesafe.env"
-SYSTEMS = ["bm25", "vector", "hybrid", "graph", "hybrid_graph", "jev", "hybrid_graph_llm", "jev_llm"]
-NEEDS_MODELS = {"vector", "hybrid", "hybrid_graph", "jev", "hybrid_graph_llm", "jev_llm"}
+SYSTEMS = ["bm25", "vector", "vector_bge", "hybrid", "graph", "hybrid_graph", "jev", "hybrid_graph_llm", "jev_llm"]
+NEEDS_MODELS = {"vector", "vector_bge", "hybrid", "hybrid_graph", "jev", "hybrid_graph_llm", "jev_llm"}
 EXTERNAL = {"jev", "jev_llm"}
 
 # Untuned starting points; tune_taus() in evaluate_systems.py overwrites them from the dev set (store/<name>/taus.json).
-DEFAULT_TAUS = {"bm25": 8.0, "vector": 0.45, "hybrid": 0.1, "graph": 0.05, "hybrid_graph": 0.1, "jev": 0.5,
+DEFAULT_TAUS = {"bm25": 8.0, "vector": 0.45, "vector_bge": 0.45, "hybrid": 0.1, "graph": 0.05, "hybrid_graph": 0.1, "jev": 0.5,
                 "hybrid_graph_llm": 0.1, "jev_llm": 0.5}
 
 
@@ -63,6 +64,34 @@ class Cached:
         key = ("rerank", query, tuple(h.chunk.id for h in hits), k)
         if key not in self.memo:
             self.memo[key] = self.inner.rerank(query, hits, k)
+        return self.memo[key]
+
+
+class CachedGenerator:
+    """Greedy decoding is deterministic, so a draft depends only on the question and the passages it sees."""
+
+    def __init__(self, generator):
+        self.generator = generator
+        self.memo = {}
+
+    def generate(self, question, hits):
+        key = (question, tuple(h.chunk.id for h in hits))
+        if key not in self.memo:
+            self.memo[key] = self.generator.generate(question, hits)
+        return self.memo[key]
+
+
+class CachedJudge:
+    """Memoise a deterministic citation judge (NLI) so threshold sweeps do not re-judge the same claim."""
+
+    def __init__(self, judge):
+        self.inner = judge
+        self.memo = {}
+
+    def judge(self, claim_text, chunk_text):
+        key = (claim_text, chunk_text)
+        if key not in self.memo:
+            self.memo[key] = self.inner.judge(claim_text, chunk_text)
         return self.memo[key]
 
 
@@ -153,12 +182,12 @@ class Components:
     def _make_nli(self):
         from guideline_rag.adapters import NLIJudge
 
-        return NLIJudge()
+        return CachedJudge(NLIJudge())
 
     def _make_llm(self):
         from guideline_rag.adapters import HFPipelineLLM
 
-        return LLMGenerator(HFPipelineLLM(LLM_MODEL))
+        return CachedGenerator(LLMGenerator(HFPipelineLLM(LLM_MODEL)))
 
     def _make_jev(self):
         from guideline_rag.adapters import JevJudge
@@ -177,6 +206,8 @@ def build_system(c: Components, name: str, tau: float, allow_external: bool = Fa
         return guarded_pipeline(c.get("bm25"), tau=tau)
     if name == "vector":
         return guarded_pipeline(c.get("minilm"), tau=tau)
+    if name == "vector_bge":
+        return guarded_pipeline(c.get("bge"), tau=tau)
     if name == "graph":
         return guarded_pipeline(c.get("graph"), tau=tau)
     if name == "hybrid":

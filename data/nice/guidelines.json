@@ -1,0 +1,5 @@
+{
+  "codes": {"CG179": "Pressure ulcers", "NG249": "Fall", "CG32": "Nutrition support", "CG183": "Drug allergy"},
+  "aliases": {"CG32-Table1": "CG32-1.5.7"},
+  "_note": "codes: NICE guideline code -> store source name. aliases: gold refs that are not numbered recommendations, mapped to the recommendation chunk that carries them (CG32 Table 1 is printed after rec 1.5.7 and is chunked with it)."
+}

@@ -1,141 +1,169 @@
-"""Run the RAG systems on a question set; with gold labels, tune τ on dev, score val, print the ablation table.
+"""Evaluate every RAG system on the team's gold question set: tune τ on train, check val, run test once.
 
-    # NICE, no gold yet: answer every question with every system, save predictions for later scoring
-    python examples/evaluate_systems.py --store nice --questions data/nice/questions.json
+    python examples/evaluate_systems.py                                   # NICE, Test+answer/questions_nurse40.json
+    python examples/evaluate_systems.py --systems hybrid_graph hybrid_graph_llm
 
-    # NICE with gold: tune τ on the dev split only, then report dev and val (val is used once)
-    python examples/evaluate_systems.py --store nice --questions data/nice/questions.json --gold data/nice/gold.json
+Gold file: a JSON list of {"id", "split" (train|val|test), "guideline" (NICE code), "answerable",
+"gold_ids" (["CG179-1.1.9", ...]; [] = the right output is "Not in the guidelines"), "risk" (standard|high), ...}.
+Scoring is at recommendation level: a chunk counts as "<code>-<rec>", so any window of a split
+recommendation retrieves it.
 
-    # Jev side study on the licence-clean L1 synthetic data (gold = our dev set)
-    python examples/evaluate_systems.py --store l1 --lexicon data/rag/lexicon.json \
-        --questions data/rag/dev_questions.json --systems hybrid_graph jev hybrid_graph_llm jev_llm --allow-external
-
-Gold file (NICE): {"N01": ["Pressure ulcers 1.1.2", ...], "N02": [], ...}. A reference is "<guideline> <rec number>",
-or a chunk id; [] means the correct output is "Not in the guidelines". A questions file whose items carry
-"gold_ids" (the L1 dev set) needs no separate gold file.
+Metrics per split:
+    Recall@3        answerable questions: share of gold recommendations in the top 3
+    Guideline@1     all questions: the top-1 retrieved chunk comes from the question's guideline
+    Abstention acc. all questions: abstained exactly when the question is not answerable
+    Course score    0.5 * Recall@3 + 0.5 * Abstention acc. (lab09 metric)
+    Unsafe          not-answerable questions that were answered anyway (lower is better)
+    Unsafe (high)   the same, restricted to high-risk questions
+    Verified claims LLM claims that passed verification
 """
 
 import argparse
+import csv
+import dataclasses
 import json
 import time
 from pathlib import Path
 
 from systems import ROOT, SYSTEMS, Components, build_system, load_taus
 
-from guideline_rag import EvalItem, abstain_layer, ablation_table_markdown, evaluate
+from guideline_rag import EvalItem, evaluate
 
 GRIDS = {
-    "bm25": [x / 2 for x in range(0, 41)],
-    "vector": [x / 40 for x in range(0, 41)],
-    "graph": [x / 200 for x in range(0, 41)],
-    "jev": [x / 20 for x in range(0, 21)],
+    "bm25": [x / 2 for x in range(0, 61)],
+    "graph": [x / 400 for x in range(0, 81)],
 }
-DEFAULT_GRID = [x / 40 for x in range(0, 41)]
-GATE_SOURCE = {"hybrid_graph_llm": "hybrid_graph", "jev_llm": "jev"}  # LLM systems reuse the retrieval system's τ
+UNIT_GRID = sorted({x / 100 for x in range(0, 101, 2)} | {x / 1000 for x in range(0, 50, 2)})
+DEFAULT_SYSTEMS = ["bm25", "vector", "vector_bge", "hybrid", "graph", "hybrid_graph", "hybrid_graph_llm"]
 
 
-def ref_to_ids(ref: str, chunks) -> list[str]:
-    ids = [c.id for c in chunks if c.id == ref]
-    if ids:
-        return ids
-    source, _, rec = ref.rpartition(" ")
-    ids = [c.id for c in chunks if c.source == source and c.metadata.get("rec") == rec]
-    if not ids:
-        raise ValueError(f"gold reference {ref!r} matches no chunk")
-    return ids
+FIRST_SECONDS = {}  # (system, question) -> latency of the first, uncached answer; later sweeps hit model caches
 
 
-def load_items(questions_path: Path, gold_path: Path | None, chunks):
-    records = json.loads(questions_path.read_text(encoding="utf-8"))
-    gold = json.loads(gold_path.read_text(encoding="utf-8")) if gold_path else None
-    items = {}
-    for r in records:
-        if "gold_ids" in r:
-            labels = r["gold_ids"]
-        elif gold is not None and r["id"] in gold:
-            labels = [i for ref in gold[r["id"]] for i in ref_to_ids(ref, chunks)]
-        else:
-            labels = None
-        items[r["id"]] = (r, labels)
-    return items
+class RefPipeline:
+    """Report retrieved chunks and citations as '<code>-<rec>' references, and time each answer."""
 
+    def __init__(self, pipeline, ref_of, name):
+        self.pipeline = pipeline
+        self.ref_of = ref_of
+        self.name = name
 
-def predict(system, records, by_id):
-    out = []
-    for r in records:
+    def answer(self, question):
         t0 = time.perf_counter()
-        res = system.answer(r["question"])
-        ref = lambda cid: f"{by_id[cid].source} {by_id[cid].metadata.get('rec') or by_id[cid].section} (p.{by_id[cid].page})"
-        out.append({
-            "id": r["id"], "question": r["question"], "answer": res.answer, "abstained": res.abstained,
-            "blocked_by": abstain_layer(res), "reason": res.reason,
-            "citations": [ref(c) for c in res.citations], "top3": [ref(c) for c in res.retrieved_ids],
-            "verdicts": [(v.verdict, v.confidence) for v in res.verdicts],
-            "seconds": round(time.perf_counter() - t0, 2),
-        })
-    return out
+        res = self.pipeline.answer(question)
+        FIRST_SECONDS.setdefault((self.name, question), time.perf_counter() - t0)
+        return dataclasses.replace(
+            res,
+            retrieved_ids=[self.ref_of[i] for i in res.retrieved_ids],
+            citations=[self.ref_of[i] for i in res.citations],
+        )
 
 
-def tune(c, name, items, allow_external):
-    grid = GRIDS.get(name, DEFAULT_GRID)
-    scored = [(evaluate(build_system(c, name, t, allow_external), items)["course_score"], t) for t in grid]
-    return max(scored)[1]
+def mean(values):
+    return sum(values) / len(values) if values else None
+
+
+def score(c, name, tau, records, ref_of):
+    pipe = RefPipeline(build_system(c, name, tau), ref_of, name)
+    items = [EvalItem(r["id"], r["question"], r["gold"]) for r in records]
+    summary = evaluate(pipe, items)
+    by_id = {r["id"]: r for r in records}
+    for row in summary["rows"]:
+        q = by_id[row["qid"]]
+        top1 = row["retrieved_ids"][0] if row["retrieved_ids"] else ""
+        row.update(guideline=q["guideline"], risk=q["risk"], split=q["split"],
+                   guideline_at_1=top1.split("-", 1)[0] == q["guideline"],
+                   seconds=round(FIRST_SECONDS[(name, q["question"])], 2))
+    rows = summary["rows"]
+    high = [r for r in rows if not r["gold_ids"] and r["risk"] == "high"]
+    summary.update(
+        guideline_at_1=mean([float(r["guideline_at_1"]) for r in rows]),
+        unsafe_high_risk=mean([float(r["unsafe"]) for r in high]),
+        seconds=mean([r["seconds"] for r in rows]),
+    )
+    return summary
+
+
+def tune(c, name, records, ref_of):
+    grid = GRIDS.get(name, UNIT_GRID)
+    return max((score(c, name, t, records, ref_of)["course_score"], t) for t in grid)[1]
+
+
+def fmt(v, pct=False):
+    return "-" if v is None else (f"{100 * v:.0f}%" if pct else f"{v:.2f}")
+
+
+def table(results, split):
+    head = ("| System | τ | Recall@3 | Guideline@1 | Abstention acc. | Course score | Unsafe | Unsafe (high-risk) "
+            "| Verified claims | s/question (first call) |\n|---|---|---|---|---|---|---|---|---|---|")
+    lines = [head]
+    for name, (tau, s) in results.items():
+        lines.append(
+            f"| {name} | {tau:g} | {fmt(s['recall_at_k'])} | {fmt(s['guideline_at_1'])} | {fmt(s['abstention_accuracy'])} "
+            f"| **{fmt(s['course_score'])}** | {fmt(s['unsafe_answer_rate'], True)} | {fmt(s['unsafe_high_risk'], True)} "
+            f"| {fmt(s['verified_claim_rate'], True)} | {s['seconds']:.2f} |"
+        )
+    n = len(next(iter(results.values()))[1]["rows"])
+    return f"### {split} (n={n})\n\n" + "\n".join(lines)
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--store", default="nice")
     parser.add_argument("--lexicon", type=Path, default=ROOT / "data" / "nice" / "lexicon.json")
-    parser.add_argument("--questions", type=Path, default=ROOT / "data" / "nice" / "questions.json")
-    parser.add_argument("--gold", type=Path)
-    parser.add_argument("--systems", nargs="+", default=["bm25", "vector", "hybrid", "graph", "hybrid_graph", "hybrid_graph_llm"],
-                        choices=SYSTEMS)
-    parser.add_argument("--allow-external", action="store_true", help="allow Jev systems (TypeSafe API)")
+    parser.add_argument("--gold", type=Path, default=ROOT / "Test+answer" / "questions_nurse40.json")
+    parser.add_argument("--guidelines", type=Path, default=ROOT / "data" / "nice" / "guidelines.json")
+    parser.add_argument("--systems", nargs="+", default=DEFAULT_SYSTEMS, choices=SYSTEMS)
     args = parser.parse_args()
 
     store = ROOT / "store" / args.store
-    out_dir = ROOT / "results" / args.store
-    out_dir.mkdir(parents=True, exist_ok=True)
+    out = ROOT / "results" / args.store
+    out.mkdir(parents=True, exist_ok=True)
+    meta = json.loads(args.guidelines.read_text(encoding="utf-8"))
+    code_of = {source: code for code, source in meta["codes"].items()}
     c = Components(store, args.lexicon)
-    by_id = {ch.id: ch for ch in c.chunks}
-    items = load_items(args.questions, args.gold, c.chunks)
+    ref_of = {
+        ch.id: f"{code_of[ch.source]}-{ch.metadata['rec']}" if ch.metadata.get("rec")
+        else f"{code_of[ch.source]}-text-{ch.id}"
+        for ch in c.chunks
+    }
+    known = set(ref_of.values())
+    records = json.loads(args.gold.read_text(encoding="utf-8"))
+    for r in records:
+        r["gold"] = sorted({meta["aliases"].get(g, g) for g in r["gold_ids"]})
+        missing = [g for g in r["gold"] if g not in known]
+        if missing:
+            raise ValueError(f"{r['id']}: gold {missing} not in the store")
+    splits = {s: [r for r in records if r["split"] == s] for s in ("train", "val", "test")}
+
     taus = load_taus(store)
-
-    labelled = {qid: EvalItem(qid, r["question"], labels) for qid, (r, labels) in items.items() if labels is not None}
-    if labelled:
-        dev = [it for qid, it in labelled.items() if items[qid][0].get("split", "dev") == "dev"]
-        val = [it for qid, it in labelled.items() if items[qid][0].get("split") == "val"]
-        tuned = set()
-        for name in args.systems:
-            if GATE_SOURCE.get(name) in tuned:
-                taus[name] = taus[GATE_SOURCE[name]]
-            else:
-                taus[name] = tune(c, name, dev, args.allow_external)
-            tuned.add(name)
-            print(f"τ[{name}] = {taus[name]} (tuned on {len(dev)} dev questions)")
-        (store / "taus.json").write_text(json.dumps({s: taus[s] for s in args.systems}, indent=1), encoding="utf-8")
-        for split_name, split_items in (("dev (tuning set, optimistic)", dev), ("val (held out)", val)):
-            if not split_items:
-                continue
-            rows = []
-            for name in args.systems:
-                summary = evaluate(build_system(c, name, taus[name], args.allow_external), split_items)
-                summary.pop("rows")
-                rows.append({"config": name, **summary})
-            table = ablation_table_markdown(rows)
-            print(f"\n## {args.store} — {split_name}, n={len(split_items)}\n\n{table}")
-            (out_dir / f"ablation_{split_name.split()[0]}.md").write_text(table + "\n", encoding="utf-8")
-
-    records = [r for r, _ in items.values()]
-    predictions = {}
     for name in args.systems:
-        predictions[name] = predict(build_system(c, name, taus[name], args.allow_external), records, by_id)
-        n_abs = sum(p["abstained"] for p in predictions[name])
-        secs = sum(p["seconds"] for p in predictions[name]) / len(records)
-        print(f"{name:17s} τ={taus[name]:<6} answered {len(records) - n_abs:2d} / abstained {n_abs:2d}   {secs:5.2f}s per question")
-    path = out_dir / "predictions.json"
-    path.write_text(json.dumps(predictions, indent=1, ensure_ascii=False), encoding="utf-8")
-    print(f"\npredictions -> {path}")
+        taus[name] = tune(c, name, splits["train"], ref_of)
+        print(f"τ[{name}] = {taus[name]:g}  (tuned on {len(splits['train'])} train questions, course score)")
+    (store / "taus.json").write_text(json.dumps({s: taus[s] for s in args.systems}, indent=1), encoding="utf-8")
+
+    report = []
+    per_question = []
+    for split in ("train", "val", "test"):
+        results = {name: (taus[name], score(c, name, taus[name], splits[split], ref_of)) for name in args.systems}
+        report.append(table(results, split + (" — τ tuned here, optimistic" if split == "train" else "")))
+        for name, (_, s) in results.items():
+            for row in s["rows"]:
+                per_question.append({"system": name, **{k: row[k] for k in (
+                    "split", "qid", "guideline", "risk", "gold_ids", "retrieved_ids", "abstained", "reason",
+                    "recall", "guideline_at_1", "abstain_correct", "unsafe", "seconds", "answer")}})
+    all_results = {name: (taus[name], score(c, name, taus[name], records, ref_of)) for name in args.systems}
+    report.append(table(all_results, "all 40 (train+val+test)"))
+
+    text = "\n\n".join(report)
+    print("\n" + text)
+    (out / "metrics.md").write_text(text + "\n", encoding="utf-8")
+    with open(out / "per_question.csv", "w", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(f, fieldnames=list(per_question[0]))
+        w.writeheader()
+        for row in per_question:
+            w.writerow({k: (json.dumps(v, ensure_ascii=False) if isinstance(v, list) else v) for k, v in row.items()})
+    print(f"\n-> {out / 'metrics.md'}\n-> {out / 'per_question.csv'}")
 
 
 if __name__ == "__main__":
