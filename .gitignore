@@ -21,3 +21,6 @@ lab09_submission.json
 __pycache__/
 *.pyc
 .pytest_cache/
+
+# Summary report embeds LLM answers that closely follow NICE wording; share the private Artifact instead
+docs/report.html
