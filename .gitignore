@@ -22,3 +22,7 @@ __pycache__/
 *.pyc
 .pytest_cache/
 
+
+# Firebase Hosting build output (copied from docs/ before each deploy)
+site/
+.firebase/

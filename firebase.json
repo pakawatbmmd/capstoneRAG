@@ -1,0 +1,9 @@
+{
+  "hosting": {
+    "public": "site",
+    "ignore": ["firebase.json", "**/.*"],
+    "cleanUrls": true,
+    "rewrites": [{ "source": "/report", "destination": "/index.html" }],
+    "headers": [{ "source": "**/*.html", "headers": [{ "key": "Cache-Control", "value": "no-cache" }] }]
+  }
+}

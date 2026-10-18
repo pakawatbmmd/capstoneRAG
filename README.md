@@ -20,7 +20,7 @@ Every model runs locally on one laptop GPU. On an RTX 4090 Laptop (16 GB), the f
 
 ## Summary report
 
-Open [`docs/report.html`](docs/report.html) in a browser (download it, then double-click). It covers the pipeline diagrams, the guardrails, how vectors and the graph are stored, the models, the metrics by split, every question with its real answer and each pipeline's output, the final verdict and a glossary. [`docs/report_public.html`](docs/report_public.html) is the same report without the LLM's answer sentences.
+**Live:** https://capstone-rag-guarded.web.app (full report) · https://capstone-rag-guarded.web.app/public (without LLM answer text). You can also open [`docs/report.html`](docs/report.html) locally in a browser. It covers the pipeline diagrams, the guardrails, how vectors and the graph are stored, the models, the metrics by split, every question with its real answer and each pipeline's output, the final verdict and a glossary. [`docs/report_public.html`](docs/report_public.html) is the same report without the LLM's answer sentences.
 
 **Verdict:** against the vector-RAG baseline, the guarded LLM pipeline wins: 33/40 answers correct vs 22/40, 0% unsafe answers vs 20%. A confirmatory run showed the graph component adds nothing, so the recommended deployment is `hybrid_llm` (hybrid retrieval + reranker + Qwen3-4B + NLI verifier).
 
