@@ -1,0 +1,19 @@
+[project]
+name = "guideline-rag"
+version = "0.1.0"
+description = "Pluggable RAG core for guideline Q&A (capstone, 3099704 AI for Digital Health)"
+requires-python = ">=3.10"
+dependencies = ["numpy"]
+
+[project.optional-dependencies]
+models = ["sentence-transformers", "transformers", "accelerate", "torch"]
+jev = ["typesafe-sdk"]
+pdf = ["pypdf"]
+dev = ["pytest"]
+
+[tool.setuptools]
+packages = ["guideline_rag"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

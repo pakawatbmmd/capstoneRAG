@@ -1,0 +1,724 @@
+{
+  "_note": "Medical terminology for GraphRAG over the 4 NICE guidelines (drug allergy CG183, falls NG249, nutrition support CG32, pressure ulcers CG179). Synonyms, drug-class members and is_a links from the guideline text plus standard clinical vocabulary. Not tuned to any evaluation question. Generic words (risk, assessment, care) are deliberately excluded so they do not connect everything to everything.",
+  "entities": {
+    "drug allergy": [
+      "drug allergy",
+      "drug allergies",
+      "medicine allergy",
+      "allergic to a drug",
+      "allergic to medicine"
+    ],
+    "allergic reaction": [
+      "allergic reaction",
+      "allergic reactions",
+      "hypersensitivity reaction",
+      "hypersensitivity"
+    ],
+    "anaphylaxis": [
+      "anaphylaxis",
+      "anaphylactic",
+      "anaphylactic shock"
+    ],
+    "angioedema": [
+      "angioedema",
+      "angio-oedema",
+      "angio‑oedema"
+    ],
+    "urticaria": [
+      "urticaria",
+      "hives",
+      "nettle rash"
+    ],
+    "exanthema": [
+      "exanthema",
+      "maculopapular rash",
+      "red macules",
+      "papules",
+      "drug rash"
+    ],
+    "fixed drug eruption": [
+      "fixed drug eruption"
+    ],
+    "stevens-johnson syndrome": [
+      "stevens-johnson syndrome",
+      "stevens–johnson syndrome",
+      "sjs",
+      "toxic epidermal necrolysis"
+    ],
+    "bronchospasm": [
+      "bronchospasm",
+      "wheeze",
+      "wheezing"
+    ],
+    "adverse drug reaction": [
+      "adverse drug reaction",
+      "adverse drug reactions",
+      "side effect",
+      "drug intolerance"
+    ],
+    "allergy status": [
+      "allergy status",
+      "drug allergy status",
+      "allergy record",
+      "allergy label"
+    ],
+    "medical records": [
+      "medical records",
+      "medical record",
+      "health record",
+      "prescription record",
+      "discharge summary"
+    ],
+    "specialist drug allergy service": [
+      "specialist drug allergy service",
+      "specialist drug allergy services",
+      "allergy specialist",
+      "allergy clinic",
+      "immunologist"
+    ],
+    "skin testing": [
+      "skin testing",
+      "skin test",
+      "skin prick test",
+      "intradermal test"
+    ],
+    "serum tryptase": [
+      "serum tryptase",
+      "mast cell tryptase",
+      "tryptase"
+    ],
+    "specific ige": [
+      "specific ige",
+      "ige testing",
+      "ige test"
+    ],
+    "drug challenge": [
+      "drug challenge",
+      "oral challenge",
+      "drug provocation test"
+    ],
+    "beta-lactam antibiotic": [
+      "beta-lactam antibiotic",
+      "beta-lactam antibiotics",
+      "beta-lactam",
+      "beta‑lactam",
+      "penicillin",
+      "amoxicillin",
+      "flucloxacillin",
+      "co-amoxiclav",
+      "cephalosporin",
+      "cefalexin",
+      "ceftriaxone",
+      "carbapenem"
+    ],
+    "antibiotic": [
+      "antibiotic",
+      "antibacterial",
+      "antimicrobial"
+    ],
+    "nsaid": [
+      "nsaid",
+      "non-steroidal anti-inflammatory drug",
+      "non‑steroidal anti‑inflammatory drug",
+      "nonsteroidal anti-inflammatory drug",
+      "ibuprofen",
+      "naproxen",
+      "diclofenac",
+      "aspirin"
+    ],
+    "selective cox-2 inhibitor": [
+      "selective cox-2 inhibitor",
+      "selective cox-2 inhibitors",
+      "selective cyclooxygenase-2 inhibitor",
+      "cox-2 inhibitor",
+      "celecoxib",
+      "etoricoxib"
+    ],
+    "general anaesthesia": [
+      "general anaesthesia",
+      "general anaesthetic",
+      "perioperative anaphylaxis",
+      "anaesthesia"
+    ],
+    "opioid": [
+      "opioid",
+      "codeine",
+      "morphine"
+    ],
+    "drug desensitisation": [
+      "drug desensitisation",
+      "desensitisation",
+      "desensitization"
+    ],
+    "falls": [
+      "falls",
+      "fall",
+      "falling",
+      "fallen",
+      "faller"
+    ],
+    "falls risk prediction tool": [
+      "falls risk prediction tool",
+      "risk prediction tool",
+      "falls risk screening tool"
+    ],
+    "multifactorial falls assessment": [
+      "multifactorial falls assessment",
+      "comprehensive falls assessment",
+      "multifactorial assessment",
+      "falls assessment"
+    ],
+    "fear of falling": [
+      "fear of falling",
+      "fear of falls"
+    ],
+    "gait": [
+      "gait",
+      "walking",
+      "mobility aid",
+      "walking aid"
+    ],
+    "strength and balance exercise": [
+      "strength and balance exercise",
+      "strength and balance training",
+      "progressive exercise",
+      "exercise programme",
+      "exercise programmes",
+      "tai chi"
+    ],
+    "home hazard assessment": [
+      "home hazard assessment",
+      "home hazard",
+      "home hazards",
+      "home modification",
+      "environmental hazard"
+    ],
+    "medication review": [
+      "medication review",
+      "medicines review",
+      "structured medication review",
+      "deprescribing"
+    ],
+    "psychotropic medicine": [
+      "psychotropic medicine",
+      "psychotropic medicines",
+      "psychotropic drug",
+      "sedative",
+      "hypnotic",
+      "benzodiazepine",
+      "antipsychotic",
+      "antidepressant"
+    ],
+    "fall-risk-increasing drug": [
+      "fall-risk-increasing drug",
+      "falls risk increasing drug",
+      "antihypertensive",
+      "diuretic"
+    ],
+    "vitamin d": [
+      "vitamin d",
+      "colecalciferol",
+      "cholecalciferol"
+    ],
+    "osteoporosis": [
+      "osteoporosis",
+      "fragility fracture",
+      "bone health"
+    ],
+    "fracture": [
+      "fracture",
+      "fractures",
+      "hip fracture"
+    ],
+    "postural hypotension": [
+      "postural hypotension",
+      "orthostatic hypotension",
+      "lying and standing blood pressure",
+      "lying and standing bp"
+    ],
+    "visual impairment": [
+      "visual impairment",
+      "vision",
+      "eyesight",
+      "cataract"
+    ],
+    "continence": [
+      "continence",
+      "incontinence",
+      "urinary urgency",
+      "nocturia"
+    ],
+    "dementia": [
+      "dementia",
+      "cognitive impairment",
+      "delirium",
+      "confusion"
+    ],
+    "parkinson's disease": [
+      "parkinson's disease",
+      "parkinsons disease",
+      "parkinson’s disease"
+    ],
+    "stroke": [
+      "stroke"
+    ],
+    "hospital inpatient": [
+      "hospital inpatient",
+      "inpatient",
+      "inpatients",
+      "hospital inpatient settings",
+      "ward"
+    ],
+    "residential care": [
+      "residential care",
+      "care home",
+      "care homes",
+      "nursing home",
+      "residential care settings"
+    ],
+    "community setting": [
+      "community setting",
+      "community settings",
+      "primary care",
+      "in the community"
+    ],
+    "occupational therapist": [
+      "occupational therapist",
+      "occupational therapy",
+      "physiotherapist",
+      "physiotherapy"
+    ],
+    "older people": [
+      "older people",
+      "older adults",
+      "older person",
+      "aged 65",
+      "65 and over",
+      "people 50 and over"
+    ],
+    "nutrition support": [
+      "nutrition support",
+      "nutritional support",
+      "artificial nutrition"
+    ],
+    "malnutrition": [
+      "malnutrition",
+      "malnourished",
+      "undernutrition",
+      "risk of malnutrition",
+      "nutritional deficiency"
+    ],
+    "malnutrition screening": [
+      "malnutrition screening",
+      "nutritional screening",
+      "screening for malnutrition",
+      "malnutrition universal screening tool"
+    ],
+    "bmi": [
+      "bmi",
+      "body mass index"
+    ],
+    "unintentional weight loss": [
+      "unintentional weight loss",
+      "weight loss",
+      "lost weight"
+    ],
+    "oral nutrition support": [
+      "oral nutrition support",
+      "oral nutritional supplements",
+      "oral nutritional supplement",
+      "sip feeds",
+      "food fortification",
+      "nutritional supplements"
+    ],
+    "enteral tube feeding": [
+      "enteral tube feeding",
+      "enteral feeding",
+      "tube feeding",
+      "enteral nutrition",
+      "enteral tube"
+    ],
+    "nasogastric tube": [
+      "nasogastric tube",
+      "nasogastric",
+      "ng tube",
+      "nasogastric feeding"
+    ],
+    "gastrostomy": [
+      "gastrostomy",
+      "peg",
+      "percutaneous endoscopic gastrostomy",
+      "jejunostomy"
+    ],
+    "parenteral nutrition": [
+      "parenteral nutrition",
+      "intravenous nutrition",
+      "tpn",
+      "total parenteral nutrition"
+    ],
+    "refeeding problems": [
+      "refeeding problems",
+      "refeeding syndrome",
+      "refeeding"
+    ],
+    "electrolytes": [
+      "electrolytes",
+      "electrolyte",
+      "potassium",
+      "phosphate",
+      "magnesium",
+      "sodium"
+    ],
+    "thiamine": [
+      "thiamine",
+      "vitamin b1",
+      "vitamin b co strong",
+      "pabrinex"
+    ],
+    "energy requirement": [
+      "energy requirement",
+      "kcal/kg",
+      "kcal",
+      "calories",
+      "energy intake"
+    ],
+    "fluid": [
+      "fluid",
+      "fluids",
+      "fluid balance",
+      "hydration",
+      "dehydration"
+    ],
+    "dysphagia": [
+      "dysphagia",
+      "swallowing difficulty",
+      "swallowing problems",
+      "unsafe swallow"
+    ],
+    "speech and language therapist": [
+      "speech and language therapist",
+      "speech and language therapy"
+    ],
+    "multidisciplinary nutrition team": [
+      "multidisciplinary nutrition team",
+      "nutrition support team",
+      "multidisciplinary team",
+      "dietitian",
+      "dietitians"
+    ],
+    "surgical patients": [
+      "surgical patients",
+      "surgery",
+      "perioperative",
+      "postoperative",
+      "preoperative"
+    ],
+    "pressure ulcer": [
+      "pressure ulcer",
+      "pressure ulcers",
+      "pressure sore",
+      "pressure sores",
+      "bedsore",
+      "bed sore",
+      "pressure injury",
+      "decubitus ulcer"
+    ],
+    "pressure ulcer risk assessment": [
+      "pressure ulcer risk assessment",
+      "braden scale",
+      "waterlow score",
+      "waterlow",
+      "purpose-t",
+      "glamorgan scale",
+      "risk assessment tool"
+    ],
+    "skin assessment": [
+      "skin assessment",
+      "skin inspection",
+      "skin integrity",
+      "non-blanching erythema",
+      "blanching"
+    ],
+    "repositioning": [
+      "repositioning",
+      "reposition",
+      "position change",
+      "turning"
+    ],
+    "pressure redistributing device": [
+      "pressure redistributing device",
+      "pressure redistributing devices",
+      "pressure-redistributing mattress",
+      "high-specification foam mattress",
+      "high-specification foam",
+      "alternating pressure mattress",
+      "dynamic support surface",
+      "mattress",
+      "cushion"
+    ],
+    "heel pressure": [
+      "heel pressure",
+      "heel",
+      "heels",
+      "offloading"
+    ],
+    "barrier preparation": [
+      "barrier preparation",
+      "barrier cream",
+      "moisture",
+      "incontinence-associated dermatitis"
+    ],
+    "wound dressing": [
+      "wound dressing",
+      "dressing",
+      "dressings",
+      "hydrocolloid",
+      "foam dressing"
+    ],
+    "debridement": [
+      "debridement",
+      "debride",
+      "autolytic debridement",
+      "sharp debridement",
+      "necrotic tissue"
+    ],
+    "negative pressure wound therapy": [
+      "negative pressure wound therapy",
+      "npwt",
+      "vacuum-assisted closure"
+    ],
+    "ulcer grading": [
+      "ulcer grading",
+      "category 1",
+      "category 2",
+      "category 3",
+      "category 4",
+      "grade 1",
+      "grade 2",
+      "grade 3",
+      "grade 4",
+      "unstageable",
+      "deep tissue injury",
+      "european pressure ulcer advisory panel",
+      "epuap"
+    ],
+    "wound infection": [
+      "wound infection",
+      "infection",
+      "cellulitis",
+      "osteomyelitis",
+      "sepsis"
+    ],
+    "systemic antibiotic": [
+      "systemic antibiotic",
+      "systemic antibiotics"
+    ],
+    "topical antimicrobial": [
+      "topical antimicrobial",
+      "topical antiseptic",
+      "topical antibiotic"
+    ],
+    "neonates and children": [
+      "neonates and children",
+      "neonate",
+      "neonates",
+      "infant",
+      "infants",
+      "children",
+      "young people",
+      "child"
+    ],
+    "limited mobility": [
+      "limited mobility",
+      "immobility",
+      "immobile",
+      "bedbound",
+      "unable to reposition"
+    ],
+    "nutritional supplement for pressure ulcer": [
+      "nutritional supplement for pressure ulcer",
+      "nutritional supplements to prevent",
+      "nutritional supplements to treat"
+    ],
+    "drug reaction with eosinophilia": [
+      "drug reaction with eosinophilia and systemic symptoms",
+      "dress syndrome"
+    ],
+    "balance problems": [
+      "balance problems",
+      "impaired balance",
+      "postural stability",
+      "unsteadiness",
+      "poor balance"
+    ],
+    "adults": [
+      "adults",
+      "adult",
+      "adult patients"
+    ]
+  },
+  "is_a": {
+    "anaphylaxis": [
+      "allergic reaction"
+    ],
+    "angioedema": [
+      "allergic reaction"
+    ],
+    "urticaria": [
+      "allergic reaction"
+    ],
+    "exanthema": [
+      "allergic reaction"
+    ],
+    "fixed drug eruption": [
+      "allergic reaction"
+    ],
+    "stevens-johnson syndrome": [
+      "allergic reaction",
+      "severe cutaneous adverse reaction"
+    ],
+    "bronchospasm": [
+      "allergic reaction"
+    ],
+    "allergic reaction": [
+      "drug allergy"
+    ],
+    "beta-lactam antibiotic": [
+      "antibiotic"
+    ],
+    "selective cox-2 inhibitor": [
+      "nsaid class"
+    ],
+    "nsaid": [
+      "nsaid class"
+    ],
+    "skin testing": [
+      "allergy test"
+    ],
+    "specific ige": [
+      "allergy test"
+    ],
+    "serum tryptase": [
+      "allergy test"
+    ],
+    "drug challenge": [
+      "allergy test"
+    ],
+    "psychotropic medicine": [
+      "fall-risk-increasing drug"
+    ],
+    "strength and balance exercise": [
+      "falls prevention intervention"
+    ],
+    "home hazard assessment": [
+      "falls prevention intervention"
+    ],
+    "medication review": [
+      "falls prevention intervention"
+    ],
+    "vitamin d": [
+      "falls prevention intervention"
+    ],
+    "postural hypotension": [
+      "falls risk factor"
+    ],
+    "visual impairment": [
+      "falls risk factor"
+    ],
+    "continence": [
+      "falls risk factor"
+    ],
+    "dementia": [
+      "falls risk factor"
+    ],
+    "parkinson's disease": [
+      "falls risk factor"
+    ],
+    "stroke": [
+      "falls risk factor"
+    ],
+    "fear of falling": [
+      "falls risk factor"
+    ],
+    "fracture": [
+      "falls outcome"
+    ],
+    "oral nutrition support": [
+      "nutrition support"
+    ],
+    "enteral tube feeding": [
+      "nutrition support"
+    ],
+    "parenteral nutrition": [
+      "nutrition support"
+    ],
+    "nasogastric tube": [
+      "enteral tube feeding"
+    ],
+    "gastrostomy": [
+      "enteral tube feeding"
+    ],
+    "thiamine": [
+      "refeeding problems"
+    ],
+    "electrolytes": [
+      "refeeding problems"
+    ],
+    "repositioning": [
+      "pressure ulcer prevention"
+    ],
+    "pressure redistributing device": [
+      "pressure ulcer prevention"
+    ],
+    "heel pressure": [
+      "pressure ulcer prevention"
+    ],
+    "barrier preparation": [
+      "pressure ulcer prevention"
+    ],
+    "skin assessment": [
+      "pressure ulcer prevention"
+    ],
+    "pressure ulcer risk assessment": [
+      "pressure ulcer prevention"
+    ],
+    "debridement": [
+      "pressure ulcer management"
+    ],
+    "wound dressing": [
+      "pressure ulcer management"
+    ],
+    "negative pressure wound therapy": [
+      "pressure ulcer management"
+    ],
+    "systemic antibiotic": [
+      "antibiotic",
+      "pressure ulcer management"
+    ],
+    "topical antimicrobial": [
+      "pressure ulcer management"
+    ],
+    "ulcer grading": [
+      "pressure ulcer"
+    ],
+    "pressure ulcer prevention": [
+      "pressure ulcer"
+    ],
+    "pressure ulcer management": [
+      "pressure ulcer"
+    ],
+    "drug reaction with eosinophilia": [
+      "allergic reaction",
+      "severe cutaneous adverse reaction"
+    ],
+    "adults": [
+      "population"
+    ],
+    "neonates and children": [
+      "population"
+    ],
+    "older people": [
+      "population"
+    ]
+  }
+}

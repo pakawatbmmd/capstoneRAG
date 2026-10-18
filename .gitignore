@@ -1,0 +1,23 @@
+# Licence: NICE content may not be redistributed outside the UK (personal study only).
+# Never publish the guideline PDFs or anything derived from their text.
+Guidelines/
+store/
+results/
+
+# Course material owned by the instructors / course dataset (redistribution not ours to grant)
+capstone project slides.pdf
+course_repo/
+data/rag/kb.json
+data/rag/questions.json
+data/rag/README.md
+lab09_submission.json
+
+# Secrets and local environments
+*.env
+.env*
+.venv/
+
+# Python / tooling
+__pycache__/
+*.pyc
+.pytest_cache/

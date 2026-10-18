@@ -1,0 +1,218 @@
+[
+ {
+  "id": "N01",
+  "question": "We use the Braden scale on our ward. Below what score should I treat a patient as high risk for pressure ulcers?",
+  "truncated": false,
+  "split": "dev"
+ },
+ {
+  "id": "N02",
+  "question": "My patient has a penicillin allergy label. Is it safe to give the cefazolin the surgeon prescribed?",
+  "truncated": false,
+  "split": "val"
+ },
+ {
+  "id": "N03",
+  "question": "I'm doing a comprehensive falls assessment. Do I need a lying and standing blood pressure, and what else should I include?",
+  "truncated": false,
+  "split": "val"
+ },
+ {
+  "id": "N04",
+  "question": "My older patient can't sleep. Which sedative is safest to ask the doctor for so she doesn't fall at night?",
+  "truncated": false,
+  "split": "val"
+ },
+ {
+  "id": "N05",
+  "question": "Should I put the bed rails up at night for a confused patient so he doesn't fall out of bed?",
+  "truncated": false,
+  "split": "val"
+ },
+ {
+  "id": "N06",
+  "question": "Our ward still scores every admission with the Morse Fall Scale. Should I rely on that score to decide who is likely to fall?",
+  "truncated": false,
+  "split": "dev"
+ },
+ {
+  "id": "N07",
+  "question": "Before I give the 6 pm IV antibiotic, what do I need to check about allergies?",
+  "truncated": false,
+  "split": "dev"
+ },
+ {
+  "id": "N08",
+  "question": "Before I start the next bolus feed, how do I check the NG tube is still in the stomach?",
+  "truncated": false,
+  "split": "val"
+ },
+ {
+  "id": "N09",
+  "question": "There's a fluid-filled blister over my patient's heel. Should I burst it or leave it intact?",
+  "truncated": false,
+  "split": "dev"
+ },
+ {
+  "id": "N10",
+  "question": "I've just admitted a 70-year-old who has never fallen. Do I still need to do a full falls assessment for her?",
+  "truncated": false,
+  "split": "dev"
+ },
+ {
+  "id": "N11",
+  "question": "How long should I observe a patient for an allergic reaction after giving the first dose of an IV antibiotic?",
+  "truncated": false,
+  "split": "dev"
+ },
+ {
+  "id": "N12",
+  "question": "Night shift, only two of us on the ward. One patient is high risk for pressure ulcers and can't turn himself. What is the minimum repositioning frequency I have to keep to?",
+  "truncated": false,
+  "split": "dev"
+ },
+ {
+  "id": "N13",
+  "question": "Can I crush my patient's enteric-coated tablets and give them down the NG tube?",
+  "truncated": false,
+  "split": "dev"
+ },
+ {
+  "id": "N14",
+  "question": "My patient is going home tomorrow and we found several fall risk factors during her stay. What should I arrange before discharge?",
+  "truncated": false,
+  "split": "val"
+ },
+ {
+  "id": "N15",
+  "question": "What dose of IM adrenaline should I give an adult who is having anaphylaxis to a drug?",
+  "truncated": false,
+  "split": "val"
+ },
+ {
+  "id": "N16",
+  "question": "Should I give non-slip socks to patients who are at risk of falls?",
+  "truncated": false,
+  "split": "val"
+ },
+ {
+  "id": "N17",
+  "question": "The PEG tube was put in this morning with no complications. When can I start feeding through it?",
+  "truncated": false,
+  "split": "dev"
+ },
+ {
+  "id": "N18",
+  "question": "My patient is confused, can't tell me about drug allergies and no family is here. What do I record for his allergy status?",
+  "truncated": false,
+  "split": "val"
+ },
+ {
+  "id": "N19",
+  "question": "How do I measure how far to insert an NG tube in an adult?",
+  "truncated": false,
+  "split": "val"
+ },
+ {
+  "id": "N20",
+  "question": "What signs at mealtimes should make me refer a patient for a swallowing assessment?",
+  "truncated": false,
+  "split": "dev"
+ },
+ {
+  "id": "N21",
+  "question": "My patient had an unwitnessed fall and may have hit her head. How often should I do neuro observations?",
+  "truncated": false,
+  "split": "dev"
+ },
+ {
+  "id": "N22",
+  "question": "My patient came out in hives after the first dose of an antibiotic. What details of the reaction must I document?",
+  "truncated": false,
+  "split": "val"
+ },
+ {
+  "id": "N23",
+  "question": "Can I use a ring (donut) cushion to take the pressure off my patient's sacrum when she sits up?",
+  "truncated": false,
+  "split": "dev"
+ },
+ {
+  "id": "N24",
+  "question": "How often should a fine-bore NG tube be changed?",
+  "truncated": false,
+  "split": "val"
+ },
+ {
+  "id": "N25",
+  "question": "Should I give an antihistamine before re-giving a drug that previously caused a mild rash?",
+  "truncated": false,
+  "split": "dev"
+ },
+ {
+  "id": "N26",
+  "question": "My elderly patient keeps trying to get up on his own. Would it be safer to keep him on bed rest so he doesn't fall?",
+  "truncated": false,
+  "split": "dev"
+ },
+ {
+  "id": "N27",
+  "question": "The family wants to massage my patient's reddened heels to 'help the circulation'. Should I let them?",
+  "truncated": false,
+  "split": "dev"
+ },
+ {
+  "id": "N28",
+  "question": "During the morning wash I found a red area over my patient's sacrum. How do I check whether it blanches, and if it doesn't, how often should I recheck it?",
+  "truncated": false,
+  "split": "dev"
+ },
+ {
+  "id": "N29",
+  "question": "We've just treated a suspected anaphylaxis to an IV antibiotic. What do I need to do about tryptase samples?",
+  "truncated": false,
+  "split": "dev"
+ },
+ {
+  "id": "N30",
+  "question": "Should patients at high risk of falling wear hip protectors while they're on the ward?",
+  "truncated": false,
+  "split": "val"
+ },
+ {
+  "id": "N31",
+  "question": "How high should I raise the head of the bed during and after an NG feed to prevent aspiration?",
+  "truncated": false,
+  "split": "dev"
+ },
+ {
+  "id": "N32",
+  "question": "What colour allergy wristband should a patient with a drug allergy wear?",
+  "truncated": false,
+  "split": "dev"
+ },
+ {
+  "id": "N33",
+  "question": "My patient has barely eaten for 12 days and his phosphate is low. The team wants to start NG feeding today. Is he at high risk of refeeding problems?",
+  "truncated": false,
+  "split": "dev"
+ },
+ {
+  "id": "N34",
+  "question": "How often should I change the dressing on a category 3 pressure ulcer?",
+  "truncated": false,
+  "split": "val"
+ },
+ {
+  "id": "N35",
+  "question": "My patient had an allergic reaction to ibuprofen and is going home today. What should I tell her about buying painkillers from the pharmacy?",
+  "truncated": false,
+  "split": "dev"
+ },
+ {
+  "id": "N36",
+  "question": "We've run out of foam dressings on the ward. Is it OK to use plain gauze on",
+  "truncated": true,
+  "split": "dev"
+ }
+]
