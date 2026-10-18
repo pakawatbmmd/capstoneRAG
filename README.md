@@ -44,6 +44,21 @@ python -m server --mock      # canned responses, no GPU or store, for frontend d
   - saved results show the real train / val / test splits
 - `server/` serves only `hybrid_llm`, with a fixed response contract.
 
+## Live demo (this laptop hosts, everyone gets a link)
+
+Double-click **`demo/start_demo.bat`**. In about a minute it does the following:
+1. **Pre-flight:** checks the GPU, the guideline store, that all 4 models are cached locally, and mains power.
+2. **Start:** launches the app **offline**, so models load from the local cache and no Wi-Fi is needed for them. The server runs at High priority in a normal window, because Windows throttles minimized processes and that halved generation speed.
+3. **Warm-up:** answers the example questions once, so clicking an example is instant.
+4. **Share:** opens a **public link** (`https://<random>.trycloudflare.com`, Cloudflare quick tunnel), copies it to the clipboard and prints it. The link changes on every start.
+
+Requirements: the venv at `%USERPROFILE%\.venvs\capstone-rag`, `store/nice` (built by `examples/ingest.py`), and `winget install Cloudflare.cloudflared`. Use `-LocalOnly` to skip the public link.
+
+Demo-day notes:
+- Keep the laptop plugged in and awake.
+- One GPU answers one question at a time. New questions take about 1–30 s; refusals are the fastest and long answers the slowest.
+- Anyone with the link sees guideline text in the citations while it runs.
+
 ## How an answer is guarded
 
 1. **Answerability gate.** If the top retrieval or reranker score is below τ (or Jev's probability is below τ), the system abstains. τ is tuned on the dev split only.
