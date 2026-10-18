@@ -75,11 +75,18 @@ Jev systems need `TYPESAFE_API_KEY` (read from `~/.config/capstone-rag/typesafe.
 | graph | 0.30 | 0.82 | 0.55 | 0.43 | 0.38 | 10% |
 | hybrid_graph | 0.85 | 1.00 | 0.62 | 0.74 | 0.50 | 0% |
 | **hybrid_graph_llm** | **0.85** | **1.00** | **0.82** | **0.84** | **0.62** | **0%** |
+| hybrid_graph_llm + fix 1 (post-hoc) | 0.85 | 1.00 | 0.85 | 0.85 | 0.62 | 0% |
 
 What the results show:
 - **Proposed system:** `hybrid_graph_llm` is correct on 33/40 questions. It answered 13, all correct with a citation, and gave **no unsafe answers**. All 7 errors are over-cautious abstentions: 4 correct drafts rejected by the verifier, and 3 retrieval misses.
 - **Baselines answer what they shouldn't:** BM25 and vector answer 15–20% of the "not documented" questions.
 - **The graph adds nothing measurable** on this corpus. `hybrid` and `hybrid_graph` differ only in third-place retrievals that were blocked anyway.
+- **Fix 1 (post-hoc):** applied after the error analysis, so its val and test numbers are post-hoc, not a fresh held-out result. It does three things:
+  - normalises the non-breaking hyphens (U+2011) in quotes
+  - tunes the verifier's `auto_accept` on train together with τ (0.8 → 0.7)
+  - logs every claim
+
+  It fixes 1 train question (34/40 correct) and leaves val and test unchanged. The remaining rejections come from the small NLI model, which judges near-verbatim clinical fragments as "unsupported", and from correctly refused paraphrased quotes.
 - **Caveat:** the splits are small (test n=8). The 95% intervals overlap, so the test difference between `hybrid_graph_llm` and `hybrid` rests on 2 questions.
 
 ## Layout

@@ -24,6 +24,7 @@ def guarded_pipeline(
     nli_judge=None,
     retrieve_k: int = 20,
     top_k: int = 3,
+    auto_accept: float = 0.8,
 ) -> RAGPipeline:
     """Jev decides answerability and verifies claims; without Jev, a score threshold and an NLI judge do."""
     if jev is not None:
@@ -35,7 +36,7 @@ def guarded_pipeline(
     if generator is not None:
         if judge is None:
             raise ValueError("a generator needs `jev` or `nli_judge` to verify its claims")
-        verifier = Verifier(judge=judge)
+        verifier = Verifier(judge=judge, auto_accept=auto_accept)
 
     return RAGPipeline(
         retriever,

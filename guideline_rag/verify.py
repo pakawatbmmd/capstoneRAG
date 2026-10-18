@@ -7,7 +7,9 @@ from typing import Protocol
 from .retrieval import tokenize
 from .types import Chunk, Claim, ClaimVerdict
 
-_PUNCTUATION = str.maketrans({"“": '"', "”": '"', "‘": "'", "’": "'", "–": "-", "—": "-"})
+_PUNCTUATION = str.maketrans(
+    {"“": '"', "”": '"', "‘": "'", "’": "'", "–": "-", "—": "-", "‐": "-", "‑": "-", "‒": "-", "−": "-"}
+)
 _NUMBER = r"(?:\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?)"
 _STRICT_NUMBER = re.compile(rf"(?<![A-Za-z0-9]){_NUMBER}")
 _LOOSE_NUMBER = re.compile(_NUMBER)

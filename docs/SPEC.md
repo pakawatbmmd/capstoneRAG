@@ -374,3 +374,10 @@ For example, `1.1 Prevention: adults`, then `Repositioning`, then `1.1.8 …` gi
 ## evaluate.py: unsafe-answer rate
 - `evaluate` summary key `unsafe_answer_rate`: among out-of-scope items (empty `gold_ids`), the fraction where the system did **not** abstain. It is None if there are no out-of-scope items. The per-row key is `unsafe` (bool, True only for an out-of-scope item that was answered).
 - `ablation_table_markdown` header becomes `| Config | Recall@3 | Abstention acc. | Course score | Verified claims | Unsafe answers |`, with the same number formatting as before.
+
+---
+
+# v1.5: fix 1 from the error analysis (verifier calibration)
+- `verify.normalize` also maps the hyphen variants U+2010, U+2011 (non-breaking hyphen, 113 occurrences in the NICE store), U+2012 and U+2212 (minus) to `-`. Before this, an LLM quote that used an ASCII hyphen could not match the chunk, and the claim was labelled `fabricated`.
+- `guarded_pipeline(..., auto_accept=0.8)` passes `auto_accept` to `Verifier`. The evaluation tunes it on the train split together with τ, over the grid {0.5, 0.6, 0.7, 0.8, 0.9}. On a tie the higher (safer) values win.
+- The evaluation logs every claim (verdict, confidence, cited ref, claim text, quote) in `per_question.csv`.

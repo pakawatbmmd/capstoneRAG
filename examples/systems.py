@@ -199,7 +199,7 @@ class Components:
         return Cached(ScoreFnReranker(self.get("jev").relevance))
 
 
-def build_system(c: Components, name: str, tau: float, allow_external: bool = False):
+def build_system(c: Components, name: str, tau: float, allow_external: bool = False, auto_accept: float = 0.8):
     if name in EXTERNAL and not allow_external:
         raise PermissionError(f"'{name}' sends guideline text to the TypeSafe API; pass allow_external=True")
     if name == "bm25":
@@ -218,8 +218,8 @@ def build_system(c: Components, name: str, tau: float, allow_external: bool = Fa
         return guarded_pipeline(c.get("hybrid_graph"), tau=tau, reranker=c.get("jev_rerank"), jev=c.get("jev"))
     if name == "hybrid_graph_llm":
         return guarded_pipeline(c.get("hybrid_graph"), tau=tau, reranker=c.get("cross"),
-                                generator=c.get("llm"), nli_judge=c.get("nli"))
+                                generator=c.get("llm"), nli_judge=c.get("nli"), auto_accept=auto_accept)
     if name == "jev_llm":
         return guarded_pipeline(c.get("hybrid_graph"), tau=tau, reranker=c.get("jev_rerank"),
-                                generator=c.get("llm"), jev=c.get("jev"))
+                                generator=c.get("llm"), jev=c.get("jev"), auto_accept=auto_accept)
     raise ValueError(f"unknown system {name!r}; choose from {SYSTEMS}")

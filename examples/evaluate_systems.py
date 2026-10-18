@@ -34,9 +34,12 @@ GRIDS = {
     "graph": [x / 400 for x in range(0, 81)],
 }
 UNIT_GRID = sorted({x / 100 for x in range(0, 101, 2)} | {x / 1000 for x in range(0, 50, 2)})
+AUTO_ACCEPT_GRID = [0.5, 0.6, 0.7, 0.8, 0.9]  # verifier confidence needed to accept a claim (LLM systems)
+LLM_SYSTEMS = {"hybrid_graph_llm", "jev_llm"}
 DEFAULT_SYSTEMS = ["bm25", "vector", "vector_bge", "hybrid", "graph", "hybrid_graph", "hybrid_graph_llm"]
 
 
+ACCEPT = {}  # system -> tuned verifier auto_accept
 FIRST_SECONDS = {}  # (system, question) -> latency of the first, uncached answer; later sweeps hit model caches
 
 
@@ -47,11 +50,13 @@ class RefPipeline:
         self.pipeline = pipeline
         self.ref_of = ref_of
         self.name = name
+        self.raw = {}
 
     def answer(self, question):
         t0 = time.perf_counter()
         res = self.pipeline.answer(question)
         FIRST_SECONDS.setdefault((self.name, question), time.perf_counter() - t0)
+        self.raw[question] = res
         return dataclasses.replace(
             res,
             retrieved_ids=[self.ref_of[i] for i in res.retrieved_ids],
@@ -63,8 +68,8 @@ def mean(values):
     return sum(values) / len(values) if values else None
 
 
-def score(c, name, tau, records, ref_of):
-    pipe = RefPipeline(build_system(c, name, tau), ref_of, name)
+def score(c, name, tau, records, ref_of, auto_accept=0.8):
+    pipe = RefPipeline(build_system(c, name, tau, auto_accept=auto_accept), ref_of, name)
     items = [EvalItem(r["id"], r["question"], r["gold"]) for r in records]
     summary = evaluate(pipe, items)
     by_id = {r["id"]: r for r in records}
@@ -73,7 +78,10 @@ def score(c, name, tau, records, ref_of):
         top1 = row["retrieved_ids"][0] if row["retrieved_ids"] else ""
         row.update(guideline=q["guideline"], risk=q["risk"], split=q["split"],
                    guideline_at_1=top1.split("-", 1)[0] == q["guideline"],
-                   seconds=round(FIRST_SECONDS[(name, q["question"])], 2))
+                   seconds=round(FIRST_SECONDS[(name, q["question"])], 2),
+                   claims=[[v.verdict, None if v.confidence is None else round(v.confidence, 3),
+                            ref_of.get(v.claim.chunk_id, v.claim.chunk_id), v.claim.text, v.claim.quote]
+                           for v in pipe.raw[q["question"]].verdicts])
     rows = summary["rows"]
     high = [r for r in rows if not r["gold_ids"] and r["risk"] == "high"]
     summary.update(
@@ -85,8 +93,11 @@ def score(c, name, tau, records, ref_of):
 
 
 def tune(c, name, records, ref_of):
+    """Best (τ, auto_accept) by train course score; ties go to the higher, more cautious values."""
     grid = GRIDS.get(name, UNIT_GRID)
-    return max((score(c, name, t, records, ref_of)["course_score"], t) for t in grid)[1]
+    accepts = AUTO_ACCEPT_GRID if name in LLM_SYSTEMS else [0.8]
+    best = max((score(c, name, t, records, ref_of, a)["course_score"], t, a) for t in grid for a in accepts)
+    return best[1], best[2]
 
 
 def fmt(v, pct=False):
@@ -99,7 +110,7 @@ def table(results, split):
     lines = [head]
     for name, (tau, s) in results.items():
         lines.append(
-            f"| {name} | {tau:g} | {fmt(s['recall_at_k'])} | {fmt(s['guideline_at_1'])} | {fmt(s['abstention_accuracy'])} "
+            f"| {name} | {tau:g}{'' if name not in LLM_SYSTEMS else f' / accept {ACCEPT[name]:g}'} | {fmt(s['recall_at_k'])} | {fmt(s['guideline_at_1'])} | {fmt(s['abstention_accuracy'])} "
             f"| **{fmt(s['course_score'])}** | {fmt(s['unsafe_answer_rate'], True)} | {fmt(s['unsafe_high_risk'], True)} "
             f"| {fmt(s['verified_claim_rate'], True)} | {s['seconds']:.2f} |"
         )
@@ -138,21 +149,22 @@ def main():
 
     taus = load_taus(store)
     for name in args.systems:
-        taus[name] = tune(c, name, splits["train"], ref_of)
-        print(f"τ[{name}] = {taus[name]:g}  (tuned on {len(splits['train'])} train questions, course score)")
+        taus[name], ACCEPT[name] = tune(c, name, splits["train"], ref_of)
+        print(f"τ[{name}] = {taus[name]:g}, auto_accept = {ACCEPT[name]:g}  (tuned on {len(splits['train'])} train questions)")
     (store / "taus.json").write_text(json.dumps({s: taus[s] for s in args.systems}, indent=1), encoding="utf-8")
+    (store / "auto_accept.json").write_text(json.dumps(ACCEPT, indent=1), encoding="utf-8")
 
     report = []
     per_question = []
     for split in ("train", "val", "test"):
-        results = {name: (taus[name], score(c, name, taus[name], splits[split], ref_of)) for name in args.systems}
+        results = {name: (taus[name], score(c, name, taus[name], splits[split], ref_of, ACCEPT[name])) for name in args.systems}
         report.append(table(results, split + (" — τ tuned here, optimistic" if split == "train" else "")))
         for name, (_, s) in results.items():
             for row in s["rows"]:
                 per_question.append({"system": name, **{k: row[k] for k in (
                     "split", "qid", "guideline", "risk", "gold_ids", "retrieved_ids", "abstained", "reason",
-                    "recall", "guideline_at_1", "abstain_correct", "unsafe", "seconds", "answer")}})
-    all_results = {name: (taus[name], score(c, name, taus[name], records, ref_of)) for name in args.systems}
+                    "recall", "guideline_at_1", "abstain_correct", "unsafe", "seconds", "answer", "claims")}})
+    all_results = {name: (taus[name], score(c, name, taus[name], records, ref_of, ACCEPT[name])) for name in args.systems}
     report.append(table(all_results, "all 40 (train+val+test)"))
 
     text = "\n\n".join(report)
