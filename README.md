@@ -18,6 +18,12 @@ The project compares six RAG designs on the same guideline store, from a keyword
 
 Every model runs locally on one laptop GPU. On an RTX 4090 Laptop (16 GB), the full stack uses 13.9 GiB. Measure your own machine with `examples/check_models.py`.
 
+## Summary report
+
+Open [`docs/report.html`](docs/report.html) in a browser (download it, then double-click). It covers the pipeline diagrams, the guardrails, how vectors and the graph are stored, the models, the metrics by split, every question with its real answer and each pipeline's output, the final verdict and a glossary. [`docs/report_public.html`](docs/report_public.html) is the same report without the LLM's answer sentences.
+
+**Verdict:** against the vector-RAG baseline, the guarded LLM pipeline wins: 33/40 answers correct vs 22/40, 0% unsafe answers vs 20%. A confirmatory run showed the graph component adds nothing, so the recommended deployment is `hybrid_llm` (hybrid retrieval + reranker + Qwen3-4B + NLI verifier).
+
 ## How an answer is guarded
 
 1. **Answerability gate.** If the top retrieval or reranker score is below τ (or Jev's probability is below τ), the system abstains. τ is tuned on the dev split only.

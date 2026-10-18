@@ -35,7 +35,7 @@ GRIDS = {
 }
 UNIT_GRID = sorted({x / 100 for x in range(0, 101, 2)} | {x / 1000 for x in range(0, 50, 2)})
 AUTO_ACCEPT_GRID = [0.5, 0.6, 0.7, 0.8, 0.9]  # verifier confidence needed to accept a claim (LLM systems)
-LLM_SYSTEMS = {"hybrid_graph_llm", "jev_llm"}
+LLM_SYSTEMS = {"hybrid_llm", "hybrid_graph_llm", "jev_llm"}
 DEFAULT_SYSTEMS = ["bm25", "vector", "vector_bge", "hybrid", "graph", "hybrid_graph", "hybrid_graph_llm"]
 
 
@@ -125,6 +125,7 @@ def main():
     parser.add_argument("--gold", type=Path, default=ROOT / "Test+answer" / "questions_nurse40.json")
     parser.add_argument("--guidelines", type=Path, default=ROOT / "data" / "nice" / "guidelines.json")
     parser.add_argument("--systems", nargs="+", default=DEFAULT_SYSTEMS, choices=SYSTEMS)
+    parser.add_argument("--tag", default="", help="suffix for output files, so extra runs never overwrite the main results")
     args = parser.parse_args()
 
     store = ROOT / "store" / args.store
@@ -151,8 +152,11 @@ def main():
     for name in args.systems:
         taus[name], ACCEPT[name] = tune(c, name, splits["train"], ref_of)
         print(f"τ[{name}] = {taus[name]:g}, auto_accept = {ACCEPT[name]:g}  (tuned on {len(splits['train'])} train questions)")
-    (store / "taus.json").write_text(json.dumps({s: taus[s] for s in args.systems}, indent=1), encoding="utf-8")
-    (store / "auto_accept.json").write_text(json.dumps(ACCEPT, indent=1), encoding="utf-8")
+    for fname, values in (("taus.json", {s: taus[s] for s in args.systems}), ("auto_accept.json", ACCEPT)):
+        path = store / fname
+        merged = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+        merged.update(values)
+        path.write_text(json.dumps(merged, indent=1), encoding="utf-8")
 
     report = []
     per_question = []
@@ -169,13 +173,14 @@ def main():
 
     text = "\n\n".join(report)
     print("\n" + text)
-    (out / "metrics.md").write_text(text + "\n", encoding="utf-8")
-    with open(out / "per_question.csv", "w", newline="", encoding="utf-8") as f:
+    suffix = f"_{args.tag}" if args.tag else ""
+    (out / f"metrics{suffix}.md").write_text(text + "\n", encoding="utf-8")
+    with open(out / f"per_question{suffix}.csv", "w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=list(per_question[0]))
         w.writeheader()
         for row in per_question:
             w.writerow({k: (json.dumps(v, ensure_ascii=False) if isinstance(v, list) else v) for k, v in row.items()})
-    print(f"\n-> {out / 'metrics.md'}\n-> {out / 'per_question.csv'}")
+    print(f"\n-> {out / f'metrics{suffix}.md'}\n-> {out / f'per_question{suffix}.csv'}")
 
 
 if __name__ == "__main__":

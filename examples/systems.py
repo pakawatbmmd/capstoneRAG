@@ -8,6 +8,7 @@
     graph           entity graph + Personalized PageRank        -                 extractive  PPR τ
     hybrid_graph    BM25 + bge-m3 + graph (RRF)                 bge-reranker-v2   extractive  reranker τ
     jev             BM25 + bge-m3 + graph (RRF)                 Jev               extractive  Jev answerability
+    hybrid_llm      as hybrid                                   bge-reranker-v2   Qwen3-4B    reranker τ + LLM + NLI verifier (no graph)
     hybrid_graph_llm  as hybrid_graph                           bge-reranker-v2   Qwen3-4B    reranker τ + LLM + NLI verifier
     jev_llm         as jev                                      Jev               Qwen3-4B    Jev answerability + LLM + Jev verifier
 
@@ -38,13 +39,13 @@ from guideline_rag.graph import GraphRetriever, LexiconExtractor, load_lexicon
 
 LLM_MODEL = "Qwen/Qwen3-4B-Instruct-2507"
 KEY_FILE = Path.home() / ".config" / "capstone-rag" / "typesafe.env"
-SYSTEMS = ["bm25", "vector", "vector_bge", "hybrid", "graph", "hybrid_graph", "jev", "hybrid_graph_llm", "jev_llm"]
-NEEDS_MODELS = {"vector", "vector_bge", "hybrid", "hybrid_graph", "jev", "hybrid_graph_llm", "jev_llm"}
+SYSTEMS = ["bm25", "vector", "vector_bge", "hybrid", "graph", "hybrid_graph", "jev", "hybrid_llm", "hybrid_graph_llm", "jev_llm"]
+NEEDS_MODELS = {"vector", "vector_bge", "hybrid", "hybrid_graph", "jev", "hybrid_llm", "hybrid_graph_llm", "jev_llm"}
 EXTERNAL = {"jev", "jev_llm"}
 
 # Untuned starting points; tune_taus() in evaluate_systems.py overwrites them from the dev set (store/<name>/taus.json).
 DEFAULT_TAUS = {"bm25": 8.0, "vector": 0.45, "vector_bge": 0.45, "hybrid": 0.1, "graph": 0.05, "hybrid_graph": 0.1, "jev": 0.5,
-                "hybrid_graph_llm": 0.1, "jev_llm": 0.5}
+                "hybrid_llm": 0.1, "hybrid_graph_llm": 0.1, "jev_llm": 0.5}
 
 
 class Cached:
@@ -216,6 +217,9 @@ def build_system(c: Components, name: str, tau: float, allow_external: bool = Fa
         return guarded_pipeline(c.get("hybrid_graph"), tau=tau, reranker=c.get("cross"))
     if name == "jev":
         return guarded_pipeline(c.get("hybrid_graph"), tau=tau, reranker=c.get("jev_rerank"), jev=c.get("jev"))
+    if name == "hybrid_llm":
+        return guarded_pipeline(c.get("hybrid"), tau=tau, reranker=c.get("cross"),
+                                generator=c.get("llm"), nli_judge=c.get("nli"), auto_accept=auto_accept)
     if name == "hybrid_graph_llm":
         return guarded_pipeline(c.get("hybrid_graph"), tau=tau, reranker=c.get("cross"),
                                 generator=c.get("llm"), nli_judge=c.get("nli"), auto_accept=auto_accept)
