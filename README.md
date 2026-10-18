@@ -42,6 +42,12 @@ Every model runs locally on one laptop GPU. On an RTX 4090 Laptop (16 GB), the f
 - Page furniture, tables of contents, boilerplate and the duplicated "Key priorities" section are dropped.
 - Chunk ids are content hashes. Re-ingesting an updated guideline re-embeds **only the changed chunks**, which is the basis for auto-updating guidelines.
 
+To rebuild and redeploy the hosted report after editing `docs/report.html`:
+
+```bash
+python examples/build_site.py && firebase deploy --only hosting
+```
+
 ## Usage
 
 ```bash
