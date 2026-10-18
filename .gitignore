@@ -26,3 +26,7 @@ __pycache__/
 # Firebase Hosting build output (copied from docs/ before each deploy)
 site/
 .firebase/
+
+# Frontend handover package (kept locally) and local tool config
+2026-10-18T07-57-16Z_capstonerag-nova-*
+.claude/

@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="description" content="Local guideline question answering with cited passages.">
+  <title>Guideline Q&amp;A</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='2' fill='none' stroke='%231f4a2c' stroke-width='2'/%3E%3Cpath d='M11 13v6m5-12v18m5-12v6' stroke='%231f4a2c' stroke-width='2.5'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="/static/app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#question">Skip to question</a>
+  <main class="page">
+    <header class="masthead">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></div>
+        <div>
+          <h1>Guideline Q&amp;A</h1>
+          <p class="subtitle">Local guideline reference</p>
+        </div>
+      </div>
+      <div class="tabs" role="tablist" aria-label="Workspace views">
+        <button id="tab-ask" class="tab" type="button" role="tab" aria-controls="panel-ask" aria-selected="true" tabindex="0">Ask</button>
+        <button id="tab-results" class="tab" type="button" role="tab" aria-controls="panel-results" aria-selected="false" tabindex="-1">Saved results</button>
+      </div>
+    </header>
+
+    <section id="panel-ask" class="panel ask-panel" role="tabpanel" aria-labelledby="tab-ask" tabindex="0">
+      <div class="welcome">
+        <div class="welcome-orb" aria-hidden="true"><span></span><span></span><span></span></div>
+        <p class="eyebrow">Your guideline assistant</p>
+        <h2>What would you like to know?</h2>
+        <p class="welcome-copy">Ask a clinical question and explore an answer grounded in the loaded guidelines.</p>
+      </div>
+      <div class="ask-workspace">
+        <form id="ask-form" class="ask-form">
+          <div class="composer">
+            <label class="visually-hidden" for="question">Clinical question</label>
+            <textarea id="question" name="question" rows="3" required aria-describedby="question-hint" placeholder="Ask a question about the guidelines..."></textarea>
+            <div class="composer-bottom">
+              <div class="system-field">
+                <label class="visually-hidden" for="system">Retrieval system</label>
+                <span class="system-icon" aria-hidden="true">✳</span>
+                <select id="system" name="system" aria-label="Retrieval system" aria-describedby="system-description" required></select>
+              </div>
+              <button id="submit" class="primary-button" type="submit" aria-label="Search guidelines" disabled><span aria-hidden="true">↗</span></button>
+            </div>
+          </div>
+          <p id="question-hint" class="field-hint">Each question is searched independently. Ctrl or ⌘ + Enter to search.</p>
+          <p id="system-description" class="field-hint system-description">Loading systems…</p>
+          <p id="ask-status" class="status" role="status" aria-live="polite"></p>
+        </form>
+        <div class="examples" role="group" aria-label="Example questions">
+          <span class="examples-label">Start with a question</span>
+          <div class="example-grid">
+            <button type="button" class="example-chip" data-question="How often should an adult at high risk of pressure ulcers be repositioned?"><span class="chip-icon" aria-hidden="true">↗</span><span>How often should an adult at high risk of pressure ulcers be repositioned?</span></button>
+            <button type="button" class="example-chip" data-question="When should a person with suspected drug allergy be referred to a specialist service?"><span class="chip-icon" aria-hidden="true">↗</span><span>When should a person with suspected drug allergy be referred to a specialist service?</span></button>
+            <button type="button" class="example-chip" data-question="What is the capital of France?"><span class="chip-icon" aria-hidden="true">↗</span><span>What is the capital of France? <span class="chip-note">Out-of-scope check</span></span></button>
+          </div>
+        </div>
+        <div id="ask-result" class="result-region"></div>
+      </div>
+    </section>
+
+    <section id="panel-results" class="panel" role="tabpanel" aria-labelledby="tab-results" tabindex="0" hidden>
+      <div class="section-heading">
+        <h2>Saved results</h2>
+      </div>
+      <p id="results-status" class="status" role="status" aria-live="polite"></p>
+      <div id="saved-content"></div>
+    </section>
+  </main>
+  <footer class="page page-footer">Guideline Q&amp;A <span aria-hidden="true">/</span> Local reference</footer>
+</body>
+</html>

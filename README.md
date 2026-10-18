@@ -25,6 +25,25 @@ Every model runs locally on one laptop GPU. On an RTX 4090 Laptop (16 GB), the f
 
 **Verdict:** against the vector-RAG baseline, the guarded LLM pipeline wins: 33/40 answers correct vs 22/40, 0% unsafe answers vs 20%. A confirmatory run showed the graph component adds nothing, so the recommended deployment is `hybrid_llm` (hybrid retrieval + reranker + Qwen3-4B + NLI verifier).
 
+## Web app (Nova chat UI) and API
+
+```bash
+# Nova chat UI + its API on this machine (NICE store, default system hybrid_llm; loopback only)
+python -m web.app            # -> http://127.0.0.1:8793
+
+# Standalone JSON API for any other frontend (contract: docs/API.md, docs at /docs)
+python -m server             # -> http://127.0.0.1:8000
+python -m server --mock      # canned responses, no GPU or store, for frontend development
+```
+
+- `web/` is the team's Nova UI adapted to the current backend:
+  - all 10 systems are listed
+  - `hybrid_llm` is the default, using the tuned τ and verifier threshold
+  - LLM systems are enabled only when a CUDA GPU is present
+  - Jev systems are disabled because of the NICE licence
+  - saved results show the real train / val / test splits
+- `server/` serves only `hybrid_llm`, with a fixed response contract.
+
 ## How an answer is guarded
 
 1. **Answerability gate.** If the top retrieval or reranker score is below τ (or Jev's probability is below τ), the system abstains. τ is tuned on the dev split only.
